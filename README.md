@@ -1,2 +1,2 @@
 # PythonSQLite
-Small procedures how to work with SQLite and Python
+Short procedures how to work with SQLite and Python
