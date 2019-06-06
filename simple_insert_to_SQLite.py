@@ -1,6 +1,5 @@
 import sqlite3
 from sqlite3 import Error
-import os
 
 
 def connect_to_db(db_file_path):
@@ -22,7 +21,12 @@ def connect_to_db(db_file_path):
             sqlite3_conn.close()
 
 
-def insert_values_to_table(conn, table_name):
+def insert_values_to_table(table_name):
+    """
+    Create a table if it is not existing and insert a new record into the table
+    :param table_name: table name in the database to insert the data into
+    :return: None
+    """
 
     c.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(fName TEXT, lName TEXT, title TEXT, age INT)')
 
@@ -41,7 +45,7 @@ if __name__ == '__main__':
 
     if conn is not None:
         c = conn.cursor()
-        insert_values_to_table(conn, 'sample_table')
+        insert_values_to_table('sample_table')
         conn.close()
     else:
         print('Connection to database failed')
