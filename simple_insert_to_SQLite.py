@@ -32,7 +32,7 @@ def insert_values_to_table(table_name):
 
     values_to_insert = ('Some First Name', 'Some Last Name', 'Very good Title', 42)
 
-    sql_query = 'INSERT INTO sample_table(fName, lName, title, age) VALUES (?,?,?,?)'
+    sql_query = 'INSERT INTO ' + table_name + '(fName, lName, title, age) VALUES (?,?,?,?)'
 
     c.execute(sql_query, values_to_insert)
     conn.commit()
