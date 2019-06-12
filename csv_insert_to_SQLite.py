@@ -32,36 +32,16 @@ def insert_values_to_table(table_name, csv_file_path):
 
     values_to_insert = open_csv_file(csv_file_path)
 
-    if values_to_insert is not None:
-        column_names, col_numbers = get_column_names_from_db_table(table_name)
+    if len(values_to_insert) > 0:
+        column_names, column_numbers = get_column_names_from_db_table(table_name)
 
-        values_str = '?,' * col_numbers
+        values_str = '?,' * column_numbers
         values_str = values_str[:-1]
 
         sql_query = 'INSERT INTO ' + table_name + '(' + column_names + ') VALUES (' + values_str + ')'
 
         c.executemany(sql_query, values_to_insert)
         conn.commit()
-
-
-def get_column_names_from_db_table(table_name):
-    """
-    Scrape the column names from a database table to a list and convert to a comma separated string, count the number
-    of columns in a database table
-    :param table_name: table name to get the column names from
-    :return: a comma separated string with column names, an integer with number of columns
-    """
-
-    table_column_names = 'PRAGMA table_info(' + table_name + ');'
-    c.execute(table_column_names)
-    table_column_names = c.fetchall()
-
-    col_count = len(table_column_names)
-
-    column_names = list()
-    for name in table_column_names:
-        column_names.append(name[1])
-    return ', '.join(column_names), col_count
 
 
 def open_csv_file(csv_file_path):
@@ -79,6 +59,28 @@ def open_csv_file(csv_file_path):
             data.append(row)
 
         return data
+
+
+def get_column_names_from_db_table(table_name):
+    """
+    Scrape the column names from a database table to a list and convert to a comma separated string, count the number
+    of columns in a database table
+    :param table_name: table name to get the column names from
+    :return: a comma separated string with column names, an integer with number of columns
+    """
+
+    table_column_names = 'PRAGMA table_info(' + table_name + ');'
+    c.execute(table_column_names)
+    table_column_names = c.fetchall()
+
+    column_count = len(table_column_names)
+
+    column_names = list()
+
+    for name in table_column_names:
+        column_names.append(name[1])
+
+    return ', '.join(column_names), column_count
 
 
 if __name__ == '__main__':
