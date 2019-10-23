@@ -2,16 +2,19 @@ import sqlite3
 from sqlite3 import Error
 
 
-def connect_to_db(db_file_path):
+DB_FILE_PATH = 'sampleSQLite.db'
+
+
+def connect_to_db(db_file):
     """
     Connect to an SQlite database, if db file does not exist it will be created
-    :param db_file_path: absolute or relative path of db file
+    :param db_file: absolute or relative path of db file
     :return: sqlite3 connection
     """
     sqlite3_conn = None
 
     try:
-        sqlite3_conn = sqlite3.connect(db_file_path)
+        sqlite3_conn = sqlite3.connect(db_file)
         return sqlite3_conn
 
     except Error as err:
@@ -39,9 +42,8 @@ def insert_values_to_table(table_name):
 
 
 if __name__ == '__main__':
-    db_file_path = 'sampleSQLite.db'
 
-    conn = connect_to_db(db_file_path)
+    conn = connect_to_db(DB_FILE_PATH)
 
     if conn is not None:
         c = conn.cursor()
