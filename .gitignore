@@ -1,4 +1,4 @@
 .idea/
 pythonSqliteenv/
 pySQLitevenv/
-**/*.db
+*.db
