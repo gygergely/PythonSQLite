@@ -2,17 +2,20 @@ import sqlite3
 from sqlite3 import Error
 import csv
 
+DB_FILE_PATH = 'sampleSQLite.db'
+CSV_FILE_PATH = '..\\Sample_files\\IMDB-Movie-Data.csv'
 
-def connect_to_db(db_file_path):
+
+def connect_to_db(db_file):
     """
     Connect to an SQlite database, if db file does not exist it will be created
-    :param db_file_path: absolute or relative path of db file
+    :param db_file: absolute or relative path of db file
     :return: sqlite3 connection
     """
     sqlite3_conn = None
 
     try:
-        sqlite3_conn = sqlite3.connect(db_file_path)
+        sqlite3_conn = sqlite3.connect(db_file)
         return sqlite3_conn
 
     except Error as err:
@@ -30,8 +33,25 @@ def insert_values_to_table(table_name, csv_file_path):
     :return: None
     """
 
+    # Create table if it is not exist
+    c.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+              '(rank        INTEGER,'
+              'title        VARCHAR,'
+              'genre        VARCHAR,'
+              'description  VARCHAR,'
+              'director     VARCHAR,'
+              'actors       VARCHAR,'
+              'year_release INTEGER,'
+              'runTime      INTEGER,'
+              'rating       DECIMAL,'
+              'votes        INTEGER,'
+              'revenue      DECIMAL,'
+              'metascore    INTEGER)')
+
+    # Read CSV file content
     values_to_insert = open_csv_file(csv_file_path)
 
+    # Insert to table
     if len(values_to_insert) > 0:
         column_names, column_numbers = get_column_names_from_db_table(table_name)
 
@@ -42,6 +62,8 @@ def insert_values_to_table(table_name, csv_file_path):
 
         c.executemany(sql_query, values_to_insert)
         conn.commit()
+    else:
+        print('Nothing to insert')
 
 
 def open_csv_file(csv_file_path):
@@ -84,14 +106,12 @@ def get_column_names_from_db_table(table_name):
 
 
 if __name__ == '__main__':
-    db_file_path = 'sampleSQLite.db'
-    csv_file_path = 'IMDB-Movie-Data.csv'
 
-    conn = connect_to_db(db_file_path)
+    conn = connect_to_db(DB_FILE_PATH)
 
     if conn is not None:
         c = conn.cursor()
-        insert_values_to_table('imdb_temp', csv_file_path)
+        insert_values_to_table('imdb_temp', CSV_FILE_PATH)
         conn.close()
     else:
         print('Connection to database failed')
