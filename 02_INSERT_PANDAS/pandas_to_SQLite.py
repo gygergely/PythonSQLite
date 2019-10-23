@@ -2,17 +2,20 @@ import sqlite3
 from sqlite3 import Error
 import pandas as pd
 
+DB_FILE_PATH = 'sampleSQLite.db'
+CSV_FILE_PATH = '..\\Sample_files\\IMDB-Movie-Data.csv'
 
-def connect_to_db(db_file_path):
+
+def connect_to_db(db_file):
     """
     Connect to an SQlite database, if db file does not exist it will be created
-    :param db_file_path: absolute or relative path of db file
+    :param db_file: absolute or relative path of db file
     :return: sqlite3 connection
     """
     sqlite3_conn = None
 
     try:
-        sqlite3_conn = sqlite3.connect(db_file_path)
+        sqlite3_conn = sqlite3.connect(db_file)
         return sqlite3_conn
 
     except Error as err:
@@ -22,16 +25,31 @@ def connect_to_db(db_file_path):
             sqlite3_conn.close()
 
 
-def insert_values_to_table(table_name, csv_file_path):
+def insert_values_to_table(table_name, csv_file):
     """
     Open a csv file with pandas, store its content in a pandas data frame, change the data frame headers to the table
     column names and insert the data to the table
     :param table_name: table name in the database to insert the data into
-    :param csv_file_path: path of the csv file to process
+    :param csv_file: path of the csv file to process
     :return: None
     """
 
-    df = pd.read_csv(csv_file_path)
+    # Create table if it is not exist
+    c.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+              '(rank        INTEGER,'
+              'title        VARCHAR,'
+              'genre        VARCHAR,'
+              'description  VARCHAR,'
+              'director     VARCHAR,'
+              'actors       VARCHAR,'
+              'year_release INTEGER,'
+              'runTime      INTEGER,'
+              'rating       DECIMAL,'
+              'votes        INTEGER,'
+              'revenue      DECIMAL,'
+              'metascore    INTEGER)')
+
+    df = pd.read_csv(csv_file)
 
     df.columns = get_column_names_from_db_table(table_name)
 
@@ -58,14 +76,12 @@ def get_column_names_from_db_table(table_name):
 
 
 if __name__ == '__main__':
-    db_file_path = 'sampleSQLite.db'
-    csv_file_path = 'IMDB-Movie-Data.csv'
 
-    conn = connect_to_db(db_file_path)
+    conn = connect_to_db(DB_FILE_PATH)
 
     if conn is not None:
         c = conn.cursor()
-        insert_values_to_table('imdb_temp', csv_file_path)
+        insert_values_to_table('imdb_temp', CSV_FILE_PATH)
         conn.close()
     else:
         print('Connection to database failed')
