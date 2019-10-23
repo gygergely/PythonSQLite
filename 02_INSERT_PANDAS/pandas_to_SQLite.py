@@ -34,38 +34,49 @@ def insert_values_to_table(table_name, csv_file):
     :return: None
     """
 
-    # Create table if it is not exist
-    c.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
-              '(rank        INTEGER,'
-              'title        VARCHAR,'
-              'genre        VARCHAR,'
-              'description  VARCHAR,'
-              'director     VARCHAR,'
-              'actors       VARCHAR,'
-              'year_release INTEGER,'
-              'runTime      INTEGER,'
-              'rating       DECIMAL,'
-              'votes        INTEGER,'
-              'revenue      DECIMAL,'
-              'metascore    INTEGER)')
+    conn = connect_to_db(DB_FILE_PATH)
 
-    df = pd.read_csv(csv_file)
+    if conn is not None:
+        c = conn.cursor()
 
-    df.columns = get_column_names_from_db_table(table_name)
+        # Create table if it is not exist
+        c.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+                  '(rank        INTEGER,'
+                  'title        VARCHAR,'
+                  'genre        VARCHAR,'
+                  'description  VARCHAR,'
+                  'director     VARCHAR,'
+                  'actors       VARCHAR,'
+                  'year_release INTEGER,'
+                  'runTime      INTEGER,'
+                  'rating       DECIMAL,'
+                  'votes        INTEGER,'
+                  'revenue      DECIMAL,'
+                  'metascore    INTEGER)')
 
-    df.to_sql(name=table_name, con=conn, if_exists='append', index=False)
+        df = pd.read_csv(csv_file)
+
+        df.columns = get_column_names_from_db_table(c, table_name)
+
+        df.to_sql(name=table_name, con=conn, if_exists='append', index=False)
+
+        conn.close()
+        print('SQL insert process finished')
+    else:
+        print('Connection to database failed')
 
 
-def get_column_names_from_db_table(table_name):
+def get_column_names_from_db_table(sql_cursor, table_name):
     """
     Scrape the column names from a database table to a list
+    :param sql_cursor: sqlite cursor
     :param table_name: table name to get the column names from
     :return: a list with table column names
     """
 
     table_column_names = 'PRAGMA table_info(' + table_name + ');'
-    c.execute(table_column_names)
-    table_column_names = c.fetchall()
+    sql_cursor.execute(table_column_names)
+    table_column_names = sql_cursor.fetchall()
 
     column_names = list()
 
@@ -76,12 +87,5 @@ def get_column_names_from_db_table(table_name):
 
 
 if __name__ == '__main__':
+    insert_values_to_table('imdb_temp', CSV_FILE_PATH)
 
-    conn = connect_to_db(DB_FILE_PATH)
-
-    if conn is not None:
-        c = conn.cursor()
-        insert_values_to_table('imdb_temp', CSV_FILE_PATH)
-        conn.close()
-    else:
-        print('Connection to database failed')
