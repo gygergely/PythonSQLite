@@ -31,23 +31,26 @@ def insert_values_to_table(table_name):
     :return: None
     """
 
-    c.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(fName TEXT, lName TEXT, title TEXT, age INT)')
-
-    values_to_insert = ('Some First Name', 'Some Last Name', 'Very good Title', 42)
-
-    sql_query = 'INSERT INTO ' + table_name + '(fName, lName, title, age) VALUES (?,?,?,?)'
-
-    c.execute(sql_query, values_to_insert)
-    conn.commit()
-
-
-if __name__ == '__main__':
-
     conn = connect_to_db(DB_FILE_PATH)
 
     if conn is not None:
         c = conn.cursor()
-        insert_values_to_table('sample_table')
+
+        c.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(fName TEXT, lName TEXT, title TEXT, age INT)')
+
+        values_to_insert = ('Some First Name', 'Some Last Name', 'Very good Title', 42)
+
+        sql_query = 'INSERT INTO ' + table_name + '(fName, lName, title, age) VALUES (?,?,?,?)'
+
+        c.execute(sql_query, values_to_insert)
+        conn.commit()
+
         conn.close()
+
+        print('SQL insert process finished')
     else:
         print('Connection to database failed')
+
+
+if __name__ == '__main__':
+    insert_values_to_table('sample_table')
