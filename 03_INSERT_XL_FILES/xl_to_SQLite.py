@@ -35,32 +35,44 @@ def insert_values_to_table(table_name, csv_file_path):
     :return: None
     """
 
-    values_to_insert = open_csv_file(csv_file_path)
+    conn = connect_to_db(DB_FILE_PATH)
 
-    if len(values_to_insert) > 0:
-        column_names, column_numbers = get_column_names_from_db_table(table_name)
+    if conn is not None:
+        c = conn.cursor()
 
-        values_str = '?,' * column_numbers
-        values_str = values_str[:-1]
+        values_to_insert = open_csv_file(csv_file_path)
 
-        c.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
-                  '(rank INTEGER, '
-                  'title VARCHAR, '
-                  'genre VARCHAR, '
-                  'description VARCHAR, '
-                  'director VARCHAR, '
-                  'actors VARCHAR, '
-                  'year_release INTEGER, '
-                  'runTime INTEGER, '
-                  'rating DECIMAL, '
-                  'votes INTEGER, '
-                  'revenue DECIMAL, '
-                  'metascore INTEGER)')
+        if len(values_to_insert) > 0:
+            column_names, column_numbers = get_column_names_from_db_table(c, table_name)
 
-        sql_query = 'INSERT INTO ' + table_name + '(' + column_names + ') VALUES (' + values_str + ')'
+            values_str = '?,' * column_numbers
+            values_str = values_str[:-1]
 
-        c.executemany(sql_query, values_to_insert)
-        conn.commit()
+            c.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+                      '(rank INTEGER, '
+                      'title VARCHAR, '
+                      'genre VARCHAR, '
+                      'description VARCHAR, '
+                      'director VARCHAR, '
+                      'actors VARCHAR, '
+                      'year_release INTEGER, '
+                      'runTime INTEGER, '
+                      'rating DECIMAL, '
+                      'votes INTEGER, '
+                      'revenue DECIMAL, '
+                      'metascore INTEGER)')
+
+            sql_query = 'INSERT INTO ' + table_name + '(' + column_names + ') VALUES (' + values_str + ')'
+
+            c.executemany(sql_query, values_to_insert)
+            conn.commit()
+            print('SQL insert process finished')
+        else:
+            print('Nothing to insert')
+
+        conn.close()
+    else:
+        print('Connection to database failed')
 
 
 def open_csv_file(csv_file_path):
@@ -80,17 +92,18 @@ def open_csv_file(csv_file_path):
         return data
 
 
-def get_column_names_from_db_table(table_name):
+def get_column_names_from_db_table(sql_cursor, table_name):
     """
     Scrape the column names from a database table to a list and convert to a comma separated string, count the number
     of columns in a database table
+    :param sql_cursor: sqlite cursor
     :param table_name: table name to get the column names from
     :return: a comma separated string with column names, an integer with number of columns
     """
 
     table_column_names = 'PRAGMA table_info(' + table_name + ');'
-    c.execute(table_column_names)
-    table_column_names = c.fetchall()
+    sql_cursor.execute(table_column_names)
+    table_column_names = sql_cursor.fetchall()
 
     column_count = len(table_column_names)
 
@@ -147,16 +160,10 @@ def save_csv_file(work_sheet, file_name):
 
 if __name__ == '__main__':
 
-    conn = connect_to_db(DB_FILE_PATH)
-
     # Get the absolute path of the XL file
     XL_FILE_PATH = os.path.abspath(XL_FILE_PATH)
 
+    # Save csv file from the given sheet (by index)
     csv_file = xl_file_to_csv(XL_FILE_PATH, 1)
 
-    if conn is not None:
-        c = conn.cursor()
-        insert_values_to_table('imdb_temp', csv_file)
-        conn.close()
-    else:
-        print('Connection to database failed')
+    insert_values_to_table('imdb_temp', csv_file)
