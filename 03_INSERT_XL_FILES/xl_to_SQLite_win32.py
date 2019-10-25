@@ -159,7 +159,6 @@ def save_csv_file(work_sheet, file_name):
 
 
 if __name__ == '__main__':
-
     # Get the absolute path of the XL file
     XL_FILE_PATH = os.path.abspath(XL_FILE_PATH)
 
